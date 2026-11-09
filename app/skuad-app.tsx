@@ -15,7 +15,7 @@ import {bearer,studentSignIn,teacherSignIn,teacherEmailAuth,logout,firebaseReady
 
 const icons=[Headphones,Hand,Mic];
 type View='home'|'teacher'|'map'|'station'|'reflection';
-type Avatar={face:string;hair:string;shirt:string;style:string;hairColor?:string;accessory?:string};
+type Avatar={face:string;hair:string;shirt:string;style:string;hairColor?:string;accessory?:string;outfit?:string};
 type ActivityWithAudio=Activity & {audioMode?:'tts'|'recording';audioRecording?:string;audioRecordingName?:string};
 const defaultAvatar:Avatar={face:'🧑🏽',hair:'Pendek',shirt:'#1c8063',style:'Semua',hairColor:'#49352b',accessory:'Tiada'};
 async function api(op:string,data?:any){
@@ -28,19 +28,64 @@ async function api(op:string,data?:any){
 }
 function Picker({label,value,options,onChange}:{label:string;value:string;options:string[];onChange:(s:string)=>void}){return <label className="field"><span>{label}</span><Select value={value} onValueChange={onChange}><SelectTrigger className="pick"><SelectValue/></SelectTrigger><SelectContent>{options.map(s=><SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent></Select></label>;}
 function TextField({label,value,onChange,rows=0,...rest}:any){return <label className="field"><span>{label}</span>{rows?<textarea rows={rows} value={value} onChange={e=>onChange(e.target.value)} {...rest}/>:<input value={value} onChange={e=>onChange(e.target.value)} {...rest}/>}</label>;}
-function AvatarBadge({avatar,size=''}:{avatar:Avatar;size?:string}){const hairMark=avatar.hair==='Bertudung'?'🧕':avatar.hair==='Topi'?'🧢':avatar.hair==='Keriting'?'〰️':avatar.hair==='Panjang'?'💇':'✂️';const accessories:Record<string,string>={'Tiada':'','Cermin mata':'🤓','Bintang':'⭐','Bunga':'🌸','Fon kepala':'🎧'};return <span className={`avatar ${size}`} style={{background:avatar.shirt}} title={`${avatar.hair}, ${avatar.style}`}><span>{avatar.face}</span><small style={{color:avatar.hairColor||'#49352b'}}>{hairMark}</small>{avatar.accessory&&avatar.accessory!=='Tiada'&&<i>{accessories[avatar.accessory]||''}</i>}</span>;}
+function AvatarBadge({avatar,size=''}:{avatar:Avatar;size?:string}){
+ const skinMap:Record<string,string>={'🧑🏻':'#f6d7bd','🧑🏼':'#e9bd98','🧑🏽':'#c98d67','🧑🏾':'#9b6548','🧑🏿':'#67412f','👧🏻':'#f6d7bd','👧🏽':'#c98d67','👧🏿':'#67412f','👦🏻':'#f6d7bd','👦🏽':'#c98d67','👦🏿':'#67412f','🧑':'#c98d67'};
+ const skin=skinMap[avatar.face]||'#c98d67';
+ const hair=avatar.hairColor||'#49352b';
+ const shirt=avatar.shirt||'#1c8063';
+ const outfit=(avatar as any).outfit||'T-shirt';
+ const hairShape=avatar.hair==='Bertudung'
+  ? <path d="M25 48 Q22 12 50 10 Q78 12 75 48 L70 62 Q64 48 50 48 Q36 48 30 62Z" fill={shirt} stroke="#355247" strokeWidth="1.5"/>
+  : avatar.hair==='Topi'
+  ? <><path d="M28 34 Q30 12 50 12 Q70 12 72 34Z" fill={hair}/><path d="M22 34 Q50 27 78 34 Q76 42 50 41 Q26 41 22 34Z" fill={shirt}/></>
+  : avatar.hair==='Keriting'
+  ? <><path d="M26 40 Q18 18 34 20 Q35 7 48 15 Q61 5 67 20 Q83 18 75 42 L72 54 L28 54Z" fill={hair}/></>
+  : avatar.hair==='Panjang'
+  ? <path d="M27 43 Q22 10 50 10 Q78 10 73 43 L78 82 Q65 75 68 55 L32 55 Q35 75 22 82Z" fill={hair}/>
+  : <path d="M27 43 Q22 10 50 10 Q78 10 73 43 L69 53 Q63 43 50 43 Q37 43 31 53Z" fill={hair}/>;
+ const glasses=avatar.accessory==='Cermin mata';
+ const flower=avatar.accessory==='Bunga';
+ const star=avatar.accessory==='Bintang';
+ const headphones=avatar.accessory==='Fon kepala';
+ const top=outfit==='Hoodie'
+  ? <><path d="M27 92 Q28 70 39 66 L50 73 L61 66 Q73 70 74 92Z" fill={shirt}/><path d="M39 67 Q50 83 61 67" fill="none" stroke="#fff" strokeWidth="2"/><path d="M44 78 L56 78 L58 92 L42 92Z" fill="#ffffff22"/></>
+  : outfit==='Dress'
+  ? <><path d="M37 65 L63 65 L78 96 L22 96Z" fill={shirt}/><path d="M37 65 Q50 75 63 65" fill="none" stroke="#fff" strokeWidth="2"/></>
+  : outfit==='Jaket'
+  ? <><path d="M27 92 Q28 70 39 66 L50 73 L61 66 Q73 70 74 92Z" fill={shirt}/><path d="M50 73 L50 92 M38 69 L44 80 M62 69 L56 80" stroke="#fff" strokeWidth="2" fill="none"/></>
+  : outfit==='Uniform'
+  ? <><path d="M27 92 Q28 70 39 66 L50 73 L61 66 Q73 70 74 92Z" fill={shirt}/><path d="M44 70 L50 79 L56 70" fill="#fff"/><path d="M50 79 L50 92" stroke="#fff" strokeWidth="2"/></>
+  : <path d="M27 92 Q28 70 39 66 L50 73 L61 66 Q73 70 74 92Z" fill={shirt}/>;
+ return <span className={`avatar ${size} avatar-illustration`} title={`${avatar.hair}, ${outfit}`} style={{background:'transparent'}}>
+  <svg viewBox="0 0 100 100" role="img" aria-label="Avatar penjelajah boleh ubah suai">
+   <ellipse cx="50" cy="94" rx="29" ry="4" fill="#00000016"/>
+   {top}
+   <rect x="44" y="57" width="12" height="14" rx="5" fill={skin}/>
+   <ellipse cx="50" cy="42" rx="23" ry="27" fill={skin}/>
+   {hairShape}
+   <path d="M40 47 Q43 50 46 47 M54 47 Q57 50 60 47" stroke="#3b2a24" strokeWidth="2" fill="none" strokeLinecap="round"/>
+   <path d="M45 58 Q50 62 55 58" stroke="#9b5148" strokeWidth="2" fill="none" strokeLinecap="round"/>
+   {glasses&&<g stroke="#293c43" strokeWidth="2" fill="none"><circle cx="41" cy="47" r="7"/><circle cx="59" cy="47" r="7"/><path d="M48 47 L52 47"/></g>}
+   {flower&&<g transform="translate(69 23)"><circle r="4" fill="#f3a5c4"/><circle cx="0" cy="-5" r="3" fill="#f3a5c4"/><circle cx="5" cy="0" r="3" fill="#f3a5c4"/><circle cx="0" cy="5" r="3" fill="#f3a5c4"/><circle cx="-5" cy="0" r="3" fill="#f3a5c4"/><circle r="2" fill="#f5d56e"/></g>}
+   {star&&<path d="M72 17 L75 23 L82 24 L77 29 L78 36 L72 32 L66 36 L67 29 L62 24 L69 23Z" fill="#f3c84b" stroke="#b88722"/>}
+   {headphones&&<g fill="none" stroke="#354d67" strokeWidth="5"><path d="M27 43 Q27 12 50 12 Q73 12 73 43"/><rect x="23" y="39" width="8" height="17" rx="3" fill="#608bd2"/><rect x="69" y="39" width="8" height="17" rx="3" fill="#608bd2"/></g>}
+  </svg>
+ </span>;
+}
 function AvatarCreator({avatar,onChange}:{avatar:Avatar;onChange:(a:Avatar)=>void}){
- const faces=['🧑🏻','🧑🏼','🧑🏽','🧑🏾','🧑🏿','👧🏻','👧🏽','👧🏿','👦🏻','👦🏽','👦🏿'];
+ const faces=['🧑🏻','🧑🏼','🧑🏽','🧑🏾','🧑🏿'];
  const hair=['Pendek','Panjang','Keriting','Bertudung','Topi'];
  const hairColors=[['Hitam','#211d1b'],['Coklat','#49352b'],['Perang','#b9823e'],['Merah','#a84b35'],['Ungu','#8056a5'],['Biru','#477fa9']];
- const outfits=[['Hijau','#1c8063'],['Jingga','#da7c4b'],['Biru','#608bd2'],['Ungu','#b26bac'],['Kuning','#ad7c28'],['Merah jambu','#d77f9d'],['Turquoise','#36a6a0'],['Merah','#c95752']];
+ const outfits=[['T-shirt','#1c8063'],['Hoodie','#da7c4b'],['Dress','#b26bac'],['Jaket','#608bd2'],['Uniform','#36a6a0']];
  const accessories=['Tiada','Cermin mata','Bintang','Bunga','Fon kepala'];
- return <div className="avatar-creator"><div className="avatar-preview creator-preview"><AvatarBadge avatar={avatar} size="large"/><strong>Pratonton penjelajah</strong><span className="small">Gabungkan pilihan untuk cipta watak kamu!</span></div>
- <fieldset className="avatar-options"><legend>1. Pilih wajah dan tona kulit</legend>{faces.map(f=><button type="button" key={f} className={avatar.face===f?'selected':''} aria-label={`Pilih ${f}`} aria-pressed={avatar.face===f} onClick={()=>onChange({...avatar,face:f})}>{f}</button>)}</fieldset>
- <fieldset className="avatar-choice-list"><legend>2. Gaya rambut / penampilan</legend><div>{hair.map(h=><button type="button" key={h} className={avatar.hair===h?'selected':''} aria-pressed={avatar.hair===h} onClick={()=>onChange({...avatar,hair:h})}>{h==='Bertudung'?'🧕':h==='Topi'?'🧢':h==='Keriting'?'〰️':h==='Panjang'?'💇':'✂️'}<span>{h}</span></button>)}</div></fieldset>
+ const currentOutfit=(avatar as any).outfit||'T-shirt';
+ return <div className="avatar-creator"><div className="avatar-preview creator-preview"><AvatarBadge avatar={avatar} size="large"/><strong>Pratonton penjelajah</strong><span className="small">Pilih wajah, rambut dan pakaian untuk mencipta watak kamu.</span></div>
+ <fieldset className="avatar-options"><legend>1. Pilih tona kulit</legend>{faces.map(f=><button type="button" key={f} className={avatar.face===f?'selected':''} aria-label="Pilih tona kulit" aria-pressed={avatar.face===f} onClick={()=>onChange({...avatar,face:f})}><span className="skin-swatch" style={{background:({'🧑🏻':'#f6d7bd','🧑🏼':'#e9bd98','🧑🏽':'#c98d67','🧑🏾':'#9b6548','🧑🏿':'#67412f'} as Record<string,string>)[f]}}/></button>)}</fieldset>
+ <fieldset className="avatar-choice-list"><legend>2. Gaya rambut / penampilan</legend><div>{hair.map(h=><button type="button" key={h} className={avatar.hair===h?'selected':''} aria-pressed={avatar.hair===h} onClick={()=>onChange({...avatar,hair:h})}><span>{h}</span></button>)}</div></fieldset>
  <fieldset className="avatar-choice-list"><legend>3. Warna rambut</legend><div>{hairColors.map(([name,color])=><button type="button" key={color} className={avatar.hairColor===color?'selected':''} aria-label={name} aria-pressed={avatar.hairColor===color} onClick={()=>onChange({...avatar,hairColor:color})}><i style={{background:color}}/><span>{name}</span></button>)}</div></fieldset>
- <fieldset className="shirt-options"><legend>4. Pakaian</legend>{outfits.map(([name,color])=><button type="button" key={color} style={{background:color}} aria-label={name} title={name} aria-pressed={avatar.shirt===color} onClick={()=>onChange({...avatar,shirt:color})}>{avatar.shirt===color&&<Check size={20}/>}</button>)}</fieldset>
- <fieldset className="avatar-choice-list"><legend>5. Aksesori</legend><div>{accessories.map(a=><button type="button" key={a} className={avatar.accessory===a?'selected':''} aria-pressed={avatar.accessory===a} onClick={()=>onChange({...avatar,accessory:a})}>{({'Tiada':'✨','Cermin mata':'🤓','Bintang':'⭐','Bunga':'🌸','Fon kepala':'🎧'} as Record<string,string>)[a]}<span>{a}</span></button>)}</div></fieldset></div>;
+ <fieldset className="avatar-choice-list"><legend>4. Pilih jenis pakaian</legend><div>{outfits.map(([name,color])=><button type="button" key={name} className={currentOutfit===name?'selected':''} aria-pressed={currentOutfit===name} onClick={()=>onChange({...avatar,shirt:color,outfit:name})}><i style={{background:color}}/><span>{name}</span></button>)}</div></fieldset>
+ <fieldset className="shirt-options"><legend>5. Warna pakaian</legend>{['#1c8063','#da7c4b','#608bd2','#b26bac','#ad7c28','#d77f9d','#36a6a0','#c95752','#343b55','#f0eee6'].map(color=><button type="button" key={color} style={{background:color}} aria-label={`Pilih warna ${color}`} aria-pressed={avatar.shirt===color} onClick={()=>onChange({...avatar,shirt:color})}>{avatar.shirt===color&&<Check size={20}/>}</button>)}</fieldset>
+ <fieldset className="avatar-choice-list"><legend>6. Aksesori</legend><div>{accessories.map(a=><button type="button" key={a} className={avatar.accessory===a?'selected':''} aria-pressed={avatar.accessory===a} onClick={()=>onChange({...avatar,accessory:a})}><span>{a}</span></button>)}</div></fieldset></div>;
 }
 const ttsCache=new globalThis.Map<string,string>();
 function AudioPlayer({text,mode='tts',recording=''}:{text:string;mode?:'tts'|'recording';recording?:string}){
